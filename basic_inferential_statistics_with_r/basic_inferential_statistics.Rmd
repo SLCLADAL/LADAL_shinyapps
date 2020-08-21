@@ -1,0 +1,113 @@
+---
+title: "Basic Inferential Statistics"
+author: "Liam Crowhurst"
+date: "21/08/2020"
+output: learnr::tutorial
+runtime: shiny_prerendered
+description: "Welcome to LADAL's basic inferential statistics tutorial!"
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(stringr)
+library(VGAM)
+library(fGarch)
+library(knitr)
+```
+
+# Fisher's Exact Test
+
+```{r fishers_exact, exercise = T}
+coolmx <- matrix(
+  c(5, 17, 40, 41),
+  nrow = 2, # number of rows of the table
+  # def. dimension names
+  dimnames = list(
+    Adverbs = c("truly", "very"),
+    Adjectives = c("cool", "other adjective"))
+)
+
+fisher.test(coolmx)
+```
+
+# Mann-Whitney U-Test / Wilcoxon Rank Sum-Test
+
+```{r wilcoxon_data, exercise = T}
+# create table
+rank <- c(1,3,5,6,8,9,10,11,17,19, 2,4,7,12,13,14,15,16,18,20)
+groups <- c(rep("Lang.Fam.1", 10), rep("Lang.Fam.2", 10))
+language_family_tb <- data.frame(groups, rank)
+# inspect table 
+language_family_tb
+
+# inspect data
+boxplot(rank ~ groups, col = c("orange", "darkgrey"), main = "", data = language_family_tb)
+# perfrom test
+wilcox.test(rank ~ groups, data = language_family_tb) 
+```
+
+
+```{r noparametric_data, exercise = T}
+# generate non-normal skewed numeric data
+r <- .1 
+frequency <- rsnorm(100,0,2,4)
+normal_reaction <- rsnorm(100,0,2,4)
+reaction_times <- frequency*r+normal_reaction*sqrt(1-r^2)
+# inspect data
+par(mfrow=c(1,2))
+boxplot(frequency, col = "orange", main = "Frequency")
+boxplot(reaction_times, col = "darkgrey", main = "Reaction Times")
+par(mfrow=c(1,1))
+
+# perform test
+wilcox.test(reaction_times, frequency)
+```
+
+# Wilcoxon Rank Sum-Test Paired Test
+
+```{r paired_data, exercise = T}
+# create data
+sober <- sample(0:9, 15, replace = T)
+intoxicated <-  sample(3:12, 15, replace = T) 
+# tabulate data
+intoxtb <- data.frame(sober, intoxicated) 
+# inspect data
+str(intoxtb)
+
+boxplot(sober, intoxicated, col = c("orange", "darkgrey"), main = "", ylab = "Number of errors", xlab = "State", data = intoxtb)
+
+# perform test
+wilcox.test(intoxtb$sober, intoxtb$intoxicated, paired = T)
+```
+
+# Kruskal-Wallis Rank Sum Test
+
+```{r kw_test, exercise = T}
+# create data
+uhms <- c(15, 13, 10, 8, 37, 23, 31, 52, 11, 17)
+speaker <- c(rep("Learner", 5), rep("NativeSpeaker", 5))
+# create table
+uhmtb <- data.frame(speaker, uhms)
+# inspect table
+str(uhmtb)
+# inspect data
+boxplot(uhms ~ speaker, col = c("orange", "darkgrey"), main = "", ylab = "Number of errors", xlab = "State", data = uhmtb)
+# perform test
+kruskal.test(speaker ~ uhms, data = uhmtb) 
+```
+
+# The Friedman Rank Sum Test
+
+```{r friedmantest, exercise = T}
+# create data
+uhms <- c(7.2, 9.1, 14.6, 13.8) #sample means
+gender <- c("Female", "Male", "Female", "Male")
+age <- c("Young", "Young", "Old", "Old")
+# create table
+uhmtb2 <- data.frame(gender, age, uhms)
+# inspect table
+uhmtb2
+
+# perform Friedman test
+friedman.test(uhms ~ age | gender, data = uhmtb2)
+```
